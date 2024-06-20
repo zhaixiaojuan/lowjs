@@ -317,6 +317,13 @@ void *native_api_load(const char *data, unsigned int size, const char **err, boo
         *err = "File is an ELF file, but not one for arm machines.";
         return NULL;
     }
+#elif defined(__loongarch64)
+    if(hdr->e_ident[EI_CLASS] != ELFCLASS64
+    || hdr->e_machine != EM_LOONGARCH)
+    {
+        *err = "File is an ELF file, but not one for loongarch64 machines.";
+        return NULL;
+    }
 #endif
 
     if(!hdr->e_phnum || size < hdr->e_phoff + hdr->e_phnum * sizeof(Elf_Phdr)
@@ -652,6 +659,64 @@ void *native_api_load(const char *data, unsigned int size, const char **err, boo
                     return NULL;
                 }
         }
+#elif defined(__loongarch64)
+        if (shdr[i].sh_type == SHT_RELA)
+        {
+            const Elf_Rela *rel = (const Elf_Rela *)(data + shdr[i].sh_offset);
+            for(int j = 0; j < shdr[i].sh_size / sizeof(Elf_Rela); j++)
+                switch(ELF_R_TYPE(rel[j].r_info))
+                {
+                case R_LARCH_NONE: break;
+
+		case R_LARCH_64:
+                case R_LARCH_64_PCREL:
+		case R_LARCH_JUMP_SLOT:
+                    uintptr_t func;
+                    const char *sym;
+
+                    sym = strings + syms[ELF_R_SYM(rel[j].r_info)].st_name;
+                    func = 0;
+
+                    for(int k = 0; k < sizeof(NATIVE_API_ENTRIES) / sizeof(native_api_entry_t); k++)
+                    {
+                        if(strcmp(NATIVE_API_ENTRIES[k].name, sym) == 0)
+                        {
+                            func = NATIVE_API_ENTRIES[k].func;
+                            break;
+                        }
+                    }
+
+                    if(!func)
+                        func = (uintptr_t)dlsym(RTLD_DEFAULT, sym);
+                    if(!func)
+                    {
+                        munmap(base, exec_size);
+                        *err = (char *)low_alloc(80 + strlen(sym));
+                        sprintf((char *)*err, "File asks for symbol '%s' which low.js does not know of.", sym);
+                        *err_malloc = true;
+                        return NULL;
+                    }
+
+                   if(ELF_R_TYPE(rel[j].r_info) == R_LARCH_64_PCREL)
+                        *(uintptr_t *)(exec + rel[j].r_offset) = func + rel[j].r_addend - (uintptr_t)(exec + rel[j].r_offset);
+                    else if(ELF_R_TYPE(rel[j].r_info) == R_LARCH_64)
+                        *(uintptr_t *)(exec + rel[j].r_offset) = func + rel[j].r_addend;
+                    else
+                        *(uintptr_t *)(exec + rel[j].r_offset) = func;
+                    break;
+
+                case R_LARCH_RELATIVE:
+                    *(uintptr_t *)(exec + rel[j].r_offset) = (uintptr_t)exec + rel[j].r_addend;
+                    break;
+
+                default:
+                    munmap(base, exec_size);
+                    *err = (char *)low_alloc(80);
+                    sprintf((char *)*err, "Unknown relocatable type #%d.", (int)ELF_R_TYPE(rel[j].r_info));
+                    *err_malloc = true;
+                    return NULL;
+                }
+        }
 #endif
     }
 
@@ -788,7 +853,7 @@ int native_api_call(duk_context *ctx)
 
 void native_api_unload_all()
 {
-#if defined(__x86_64__) || defined(__i386__) || defined(__aarch64__) || defined(__arm__)
+#if defined(__x86_64__) || defined(__i386__) || defined(__aarch64__) || defined(__arm__) || defined(__loongarch64)
     for(int i = 0; i < gNativeAPIRegisteredFrames.size(); i++)
         __deregister_frame(gNativeAPIRegisteredFrames[i]);
     gNativeAPIRegisteredFrames.clear();

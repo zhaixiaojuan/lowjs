@@ -371,6 +371,8 @@ duk_ret_t low_process_info(duk_context *ctx)
     duk_push_string(ctx, "x64");
 #elif defined(__i386__)
     duk_push_string(ctx, "x32");
+#elif defined(__loongarch64)
+    duk_push_string(ctx, "loongarch64");
 #else
 #error "unknown architecture"
 #endif

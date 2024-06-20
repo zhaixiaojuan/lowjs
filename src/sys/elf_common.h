@@ -304,6 +304,8 @@ typedef struct {
 #define	EM_AARCH64	183	/* AArch64 (64-bit ARM) */
 #define	EM_RISCV	243	/* RISC-V */
 
+#define EM_LOONGARCH    258     /* LoongArch */
+
 /* Non-standard or deprecated. */
 #define	EM_486		6	/* Intel i486. */
 #define	EM_MIPS_RS4_BE	10	/* MIPS R4000 Big-Endian */
@@ -1140,6 +1142,57 @@ typedef struct {
 #define	R_IA_64_DTPREL64MSB	0xb6	/* word64 MSB	@dtprel(S + A) */
 #define	R_IA_64_DTPREL64LSB	0xb7	/* word64 LSB	@dtprel(S + A) */
 #define	R_IA_64_LTOFF_DTPREL22	0xba	/* imm22	@ltoff(@dtprel(S+A)) */
+
+#define R_LARCH_NONE              0    /* None */
+#define R_LARCH_32                1    /* *(int32_t *) PC = RtAddr + A */
+#define R_LARCH_64                2    /* *(int64_t *) PC = RtAddr + A */
+#define R_LARCH_RELATIVE          3    /* *(void **) PC = B + A  */
+#define R_LARCH_COPY              4    /* memcpy (PC, RtAddr, sizeof (sym)) */
+#define R_LARCH_JUMP_SLOT         5    /* implementation-defined */
+#define R_LARCH_TLS_DTPMOD32      6    /* *(int32_t *) PC = ID of module defining sym */
+#define R_LARCH_TLS_DTPMOD64      7    /* *(int64_t *) PC = ID of module defining sym */
+#define R_LARCH_TLS_DTPREL32      8    /* *(int32_t *) PC = DTV-relative offset for sym */
+#define R_LARCH_TLS_DTPREL64      9    /* *(int64_t *) PC = DTV-relative offset for sym */
+#define R_LARCH_TLS_TPREL32      10    /* *(int32_t *) PC = T */
+#define R_LARCH_TLS_TPREL64      11    /* *(int64_t *) PC = T */
+#define R_LARCH_IRELATIVE        12    /* *(void **) PC = (((void *)(*)()) (B + A)) () */
+#define R_LARCH_B16              64    /* 18-bit PC-relative jump */
+#define R_LARCH_B21              65    /* 23-bit PC-relative jump */
+#define R_LARCH_B26              66    /* 28-bit PC-relative jump */
+#define R_LARCH_ABS_HI20         67    /* [31 ... 12] bits of 32/64-bit absolute address */
+#define R_LARCH_ABS_LO12         68    /* [11 ... 0] bits of 32/64-bit absolute address */
+#define R_LARCH_ABS64_LO20       69    /* [51 ... 32] bits of 64-bit absolute address  */
+#define R_LARCH_ABS64_HI12       70    /* [63 ... 52] bits of 64-bit absolute address */
+#define R_LARCH_PCALA_HI20       71    /* [31 ... 12] bits of 32/64-bit PC-relative offset */
+#define R_LARCH_PCALA_LO12       72    /* [11 ... 0] bits of 32/64-bit address */
+#define R_LARCH_PCALA64_LO20     73    /* [51 ... 32] bits of 64-bit PC-relative offset */
+#define R_LARCH_PCALA64_HI12     74    /* [63 ... 52] bits of 64-bit PC-relative offset */
+#define R_LARCH_GOT_PC_HI20      75    /* [31 ... 12] bits of 32/64-bit PC-relative offset to GOT entry */
+#define R_LARCH_GOT_PC_LO12      76    /* [11 ... 0] bits of 32/64-bit GOT entry address */
+#define R_LARCH_GOT64_PC_LO20    77    /* [51 ... 32] bits of 64-bit PC-relative offset to GOT entry */
+#define R_LARCH_GOT64_PC_HI12    78    /* [63 ... 52] bits of 64-bit PC-relative offset to GOT entry */
+#define R_LARCH_GOT_HI20         79    /* [31 ... 12] bits of 32/64-bit GOT entry absolute address */
+#define R_LARCH_GOT_LO12         80    /* [11 ... 0] bits of 32/64-bit GOT entry absolute address  */
+#define R_LARCH_GOT64_LO20       81    /* [51 ... 32] bits of 64-bit GOT entry absolute address  */
+#define R_LARCH_GOT64_HI12       82    /* [63 ... 52] bits of 64-bit GOT entry absolute address */
+#define R_LARCH_TLS_LE_HI20      83    /* [31 ... 12] bits of TLS LE 32/64-bit offset from TP register */
+#define R_LARCH_TLS_LE_LO12      84    /* [11 ... 0] bits of TLS LE 32/64-bit offset from TP register */
+#define R_LARCH_TLS_LE64_LO20    85    /* [51 ... 32] bits of TLS LE 64-bit offset from TP register */
+#define R_LARCH_TLS_LE64_HI12    86    /* [63 ... 52] bits of TLS LE 64-bit offset from TP register */
+#define R_LARCH_TLS_IE_PC_HI20   87    /* [31 ... 12] bits of 32/64-bit PC-relative offset to TLS IE GOT entry */
+#define R_LARCH_TLS_IE_PC_LO12   88    /* [11 ... 0] bits of 32/64-bit TLS IE GOT entry address */
+#define R_LARCH_TLS_IE64_PC_LO20 89    /* [51 ... 32] bits of 64-bit PC-relative offset to TLS IE GOT entry */
+#define R_LARCH_TLS_IE64_PC_HI12 90    /* [63 ... 52] bits of 64-bit PC-relative offset to TLS IE GOT entry */
+#define R_LARCH_TLS_IE_HI20      91    /* [31 ... 12] bits of 32/64-bit TLS IE GOT entry absolute address */
+#define R_LARCH_TLS_IE_LO12      92    /* [11 ... 0] bits of 32/64-bit TLS IE GOT entry absolute address */
+#define R_LARCH_TLS_IE64_LO20    93    /* [51 ... 32] bits of 64-bit TLS IE GOT entry absolute address */
+#define R_LARCH_TLS_IE64_HI12    94    /* [63 ... 52] bits of 64-bit TLS IE GOT entry absolute address */
+#define R_LARCH_TLS_LD_PC_HI20   95    /* [31 ... 12] bits of 32/64-bit PC-relative offset to TLS LD GOT entry */
+#define R_LARCH_TLS_LD_HI20      96    /* [31 ... 12] bits of 32/64-bit TLS LD GOT entry absolute address */
+#define R_LARCH_TLS_GD_PC_HI20   97    /* [31 ... 12] bits of 32/64-bit PC-relative offset to TLS GD GOT entry */
+#define R_LARCH_TLS_GD_HI20      98    /* [31 ... 12] bits of 32/64-bit TLS GD GOT entry absolute address */
+#define R_LARCH_32_PCREL         99    /* 32-bit PC relative */
+#define R_LARCH_RELAX            100    /* Instruction can be relaxed, paired with a normal relocation at the same address */
 
 #define	R_MIPS_NONE	0	/* No reloc */
 #define	R_MIPS_16	1	/* Direct 16 bit */
